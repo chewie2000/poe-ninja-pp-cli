@@ -50,22 +50,24 @@ func newNovelTrendCmd(flags *rootFlags) *cobra.Command {
 
 			query := strings.ToLower(strings.Join(args, " "))
 
-			// Try currency first
-			if cr, err := poeFetchCurrencyGame(flagLeague, "Currency", flagGame); err == nil {
-				for _, line := range cr.Lines {
-					if strings.EqualFold(line.CurrencyTypeName, strings.Join(args, " ")) ||
-						strings.Contains(strings.ToLower(line.CurrencyTypeName), query) {
-						v := trendView{
-							Name:        line.CurrencyTypeName,
-							League:      flagLeague,
-							ChaosValue:  line.ChaosEquivalent,
-							TotalChange: line.ReceiveSparkLine.TotalChange,
-							Sparkline:   line.ReceiveSparkLine.Data,
-							Chart:       sparklineASCII(line.ReceiveSparkLine.Data),
-							Category:    "Currency",
-						}
-						return renderTrend(cmd, flags, v)
+			// Try currency first — surface the error if the API call itself fails
+			cr, currErr := poeFetchCurrencyGame(flagLeague, "Currency", flagGame)
+			if currErr != nil {
+				return apiErr(fmt.Errorf("fetching %s currency data: %w", flagGame, currErr))
+			}
+			for _, line := range cr.Lines {
+				if strings.EqualFold(line.CurrencyTypeName, strings.Join(args, " ")) ||
+					strings.Contains(strings.ToLower(line.CurrencyTypeName), query) {
+					v := trendView{
+						Name:        line.CurrencyTypeName,
+						League:      flagLeague,
+						ChaosValue:  line.ChaosEquivalent,
+						TotalChange: line.ReceiveSparkLine.TotalChange,
+						Sparkline:   line.ReceiveSparkLine.Data,
+						Chart:       sparklineASCII(line.ReceiveSparkLine.Data),
+						Category:    "Currency",
 					}
+					return renderTrend(cmd, flags, v)
 				}
 			}
 
@@ -93,7 +95,19 @@ func newNovelTrendCmd(flags *rootFlags) *cobra.Command {
 				}
 			}
 
-			return notFoundErr(fmt.Errorf("item %q not found in league %q — try the exact name from poe.ninja", strings.Join(args, " "), flagLeague))
+			// Show a few available currencies to help the user
+			var available []string
+			for _, l := range cr.Lines {
+				available = append(available, l.CurrencyTypeName)
+				if len(available) >= 5 {
+					break
+				}
+			}
+			hint := ""
+			if len(available) > 0 {
+				hint = fmt.Sprintf(" Available currencies include: %s", strings.Join(available, ", "))
+			}
+			return notFoundErr(fmt.Errorf("item %q not found in %s %s league.%s", strings.Join(args, " "), flagGame, flagLeague, hint))
 		},
 	}
 	cmd.Flags().StringVar(&flagGame, "game", "poe2", "Game version: poe1 or poe2")

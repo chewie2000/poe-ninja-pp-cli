@@ -79,31 +79,84 @@ type poeItemResponse struct {
 	Lines []poeItemLine `json:"lines"`
 }
 
+// poe2CurrencyLine is one entry from the PoE2 currency overview response.
+// PoE2 uses primaryValue instead of chaosEquivalent, and different sparkline fields.
+type poe2CurrencyLine struct {
+	CurrencyTypeName string       `json:"currencyTypeName"`
+	PrimaryValue     float64      `json:"primaryValue"`
+	SparkLine        poeSparkLine `json:"sparkline"`
+	ListingCount     int          `json:"listingCount"`
+	DetailsID        string       `json:"detailsId"`
+}
+
+type poe2CurrencyResponse struct {
+	Lines []poe2CurrencyLine `json:"lines"`
+	Items []struct {
+		ID      int    `json:"id"`
+		Name    string `json:"name"`
+		Icon    string `json:"icon"`
+		TradeID string `json:"tradeId"`
+	} `json:"items"`
+}
+
+// toCurrencyResponse converts a PoE2 response into the shared PoE1 format
+// so the rest of the codebase can use one type.
+func (r *poe2CurrencyResponse) toCurrencyResponse() *poeCurrencyResponse {
+	out := &poeCurrencyResponse{}
+	for _, l := range r.Lines {
+		out.Lines = append(out.Lines, poeCurrencyLine{
+			CurrencyTypeName: l.CurrencyTypeName,
+			ChaosEquivalent:  l.PrimaryValue,
+			ReceiveSparkLine: l.SparkLine,
+			ListingCount:     l.ListingCount,
+			DetailsID:        l.DetailsID,
+		})
+	}
+	return out
+}
+
 // poeFetchCurrency fetches live currency data for a league and type (Currency or Fragment).
-// Use game="poe2" for Path of Exile 2, anything else for PoE1.
 func poeFetchCurrency(league, currType string) (*poeCurrencyResponse, error) {
 	return poeFetchCurrencyGame(league, currType, "poe1")
 }
 
+// poeFetchCurrencyGame fetches currency data for either PoE1 or PoE2.
+// PoE2 uses a different endpoint path, different query param names, and a
+// different response shape (primaryValue vs chaosEquivalent).
 func poeFetchCurrencyGame(league, currType, game string) (*poeCurrencyResponse, error) {
-	var u string
 	if game == "poe2" {
-		u = "https://poe.ninja/api/data/poe2/currencyoverview"
-	} else {
-		u = "https://poe.ninja/api/data/currencyoverview"
+		// PoE2 endpoint: /api/data/poe2/currencyoverview with leagueName + type
+		u := "https://poe.ninja/api/data/poe2/currencyoverview"
+		params := url.Values{}
+		params.Set("leagueName", league)
+		params.Set("type", currType)
+		resp, err := poeDoGet(u + "?" + params.Encode())
+		if err != nil {
+			return nil, err
+		}
+		defer resp.Body.Close()
+		if resp.StatusCode != 200 {
+			return nil, fmt.Errorf("poe.ninja PoE2 API returned HTTP %d for %s/%s — check league name (e.g. Standard)", resp.StatusCode, league, currType)
+		}
+		var result poe2CurrencyResponse
+		if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+			return nil, fmt.Errorf("parsing PoE2 response: %w", err)
+		}
+		return result.toCurrencyResponse(), nil
 	}
+
+	// PoE1 endpoint
+	u := "https://poe.ninja/api/data/currencyoverview"
 	params := url.Values{}
 	params.Set("league", league)
 	params.Set("type", currType)
-
 	resp, err := poeDoGet(u + "?" + params.Encode())
 	if err != nil {
 		return nil, err
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != 200 {
-		hint := "poe1: Mirage, Standard | poe2: Standard"
-		return nil, fmt.Errorf("poe.ninja API returned HTTP %d for %s currency %s/%s — valid leagues: %s", resp.StatusCode, game, league, currType, hint)
+		return nil, fmt.Errorf("poe.ninja API returned HTTP %d for %s/%s — check league name (e.g. Mirage, Standard)", resp.StatusCode, league, currType)
 	}
 	var result poeCurrencyResponse
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
@@ -115,14 +168,18 @@ func poeFetchCurrencyGame(league, currType, game string) (*poeCurrencyResponse, 
 // poeFetchItemGame fetches item data for a specific game version.
 func poeFetchItemGame(league, itemType, game string) (*poeItemResponse, error) {
 	var u string
+	var params url.Values
 	if game == "poe2" {
 		u = "https://poe.ninja/api/data/poe2/itemoverview"
+		params = url.Values{}
+		params.Set("leagueName", league)
+		params.Set("type", itemType)
 	} else {
 		u = "https://poe.ninja/api/data/itemoverview"
+		params = url.Values{}
+		params.Set("league", league)
+		params.Set("type", itemType)
 	}
-	params := url.Values{}
-	params.Set("league", league)
-	params.Set("type", itemType)
 
 	resp, err := poeDoGet(u + "?" + params.Encode())
 	if err != nil {
