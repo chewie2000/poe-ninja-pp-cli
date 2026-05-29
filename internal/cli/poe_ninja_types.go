@@ -125,24 +125,44 @@ func poeFetchCurrency(league, currType string) (*poeCurrencyResponse, error) {
 // different response shape (primaryValue vs chaosEquivalent).
 func poeFetchCurrencyGame(league, currType, game string) (*poeCurrencyResponse, error) {
 	if game == "poe2" {
-		// PoE2 endpoint: /api/data/poe2/currencyoverview with leagueName + type
-		u := "https://poe.ninja/api/data/poe2/currencyoverview"
-		params := url.Values{}
-		params.Set("leagueName", league)
-		params.Set("type", currType)
-		resp, err := poeDoGet(u + "?" + params.Encode())
-		if err != nil {
-			return nil, err
+		// PoE2 uses a different base path and different param names.
+		// URL: https://poe.ninja/api/data/poe2/currencyoverview
+		//   OR https://poe.ninja/poe2/api/economy/currencyexchange/overview
+		// Params: leagueName + overviewName (not league + type)
+		candidates := []struct{ u, leagueKey, typeKey string }{
+			{"https://poe.ninja/api/data/poe2/currencyoverview", "leagueName", "overviewName"},
+			{"https://poe.ninja/poe2/api/economy/currencyexchange/overview", "leagueName", "overviewName"},
+			{"https://poe.ninja/api/data/poe2/currencyoverview", "league", "type"},
 		}
-		defer resp.Body.Close()
-		if resp.StatusCode != 200 {
-			return nil, fmt.Errorf("poe.ninja PoE2 API returned HTTP %d for %s/%s — check league name (e.g. Standard)", resp.StatusCode, league, currType)
+		var lastErr error
+		for _, c := range candidates {
+			params := url.Values{}
+			params.Set(c.leagueKey, league)
+			params.Set(c.typeKey, currType)
+			resp, err := poeDoGet(c.u + "?" + params.Encode())
+			if err != nil {
+				lastErr = err
+				continue
+			}
+			if resp.StatusCode != 200 {
+				resp.Body.Close()
+				lastErr = fmt.Errorf("HTTP %d from %s", resp.StatusCode, c.u)
+				continue
+			}
+			var result poe2CurrencyResponse
+			decErr := json.NewDecoder(resp.Body).Decode(&result)
+			resp.Body.Close()
+			if decErr != nil {
+				lastErr = decErr
+				continue
+			}
+			if len(result.Lines) > 0 {
+				return result.toCurrencyResponse(), nil
+			}
+			// Empty lines — try next candidate
+			lastErr = fmt.Errorf("empty response from %s", c.u)
 		}
-		var result poe2CurrencyResponse
-		if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
-			return nil, fmt.Errorf("parsing PoE2 response: %w", err)
-		}
-		return result.toCurrencyResponse(), nil
+		return nil, fmt.Errorf("PoE2 currency API unavailable for league %q — check poe.ninja/poe2 for the current league name: %w", league, lastErr)
 	}
 
 	// PoE1 endpoint
@@ -173,7 +193,7 @@ func poeFetchItemGame(league, itemType, game string) (*poeItemResponse, error) {
 		u = "https://poe.ninja/api/data/poe2/itemoverview"
 		params = url.Values{}
 		params.Set("leagueName", league)
-		params.Set("type", itemType)
+		params.Set("type", itemType) // PoE2 items still use "type"
 	} else {
 		u = "https://poe.ninja/api/data/itemoverview"
 		params = url.Values{}
