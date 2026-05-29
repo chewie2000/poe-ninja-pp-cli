@@ -28,6 +28,7 @@ type divcardView struct {
 
 func newNovelDivcardCmd(flags *rootFlags) *cobra.Command {
 	var flagLeague string
+	var flagGame string
 	var flagMinProfit float64
 	var flagLimit int
 	var flagSort string
@@ -57,8 +58,8 @@ the most valuable individual cards to sell.`,
 		Short:       "List all divination cards ranked by value or set cost",
 		Annotations: map[string]string{"mcp:read-only": "true"},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if cmd.Flags().NFlag() == 0 && len(args) == 0 && flagLeague == "Mirage" {
-				// Not a bare invocation — proceed with defaults
+			if flagLeague == "" {
+				flagLeague = poeDefaultLeague(flagGame)
 			}
 			if dryRunOK(flags) {
 				fmt.Fprintln(cmd.OutOrStdout(), "would list divination cards for league:", flagLeague)
@@ -69,7 +70,7 @@ the most valuable individual cards to sell.`,
 				return usageErr(fmt.Errorf("--league is required"))
 			}
 
-			ir, err := poeFetchItem(flagLeague, "DivinationCard")
+			ir, err := poeFetchItemGame(flagLeague, "DivinationCard", flagGame)
 			if err != nil {
 				return apiErr(fmt.Errorf("fetching divination card data: %w", err))
 			}
@@ -139,7 +140,8 @@ the most valuable individual cards to sell.`,
 			return nil
 		},
 	}
-	listCmd.Flags().StringVar(&flagLeague, "league", "Mirage", "League name (e.g. Mirage, Standard)")
+	listCmd.Flags().StringVar(&flagGame, "game", "poe2", "Game version: poe1 or poe2")
+	listCmd.Flags().StringVar(&flagLeague, "league", "", "League name (default: Standard for poe2, Mirage for poe1)")
 	listCmd.Flags().Float64Var(&flagMinProfit, "min-profit", 1.0, "Minimum card chaos value to include")
 	listCmd.Flags().IntVar(&flagLimit, "limit", 50, "Maximum results to show")
 	listCmd.Flags().StringVar(&flagSort, "sort", "value", "Sort order: value, set-cost, or trend")

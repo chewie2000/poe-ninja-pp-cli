@@ -29,6 +29,7 @@ type portfolioView struct {
 func newNovelPortfolioCmd(flags *rootFlags) *cobra.Command {
 	var flagItems string
 	var flagLeague string
+	var flagGame string
 
 	cmd := &cobra.Command{
 		Use:   "portfolio",
@@ -42,6 +43,9 @@ func newNovelPortfolioCmd(flags *rootFlags) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if cmd.Flags().NFlag() == 0 && len(args) == 0 {
 				return cmd.Help()
+			}
+			if flagLeague == "" {
+				flagLeague = poeDefaultLeague(flagGame)
 			}
 			if dryRunOK(flags) {
 				fmt.Fprintln(cmd.OutOrStdout(), "would calculate portfolio value for supplied items")
@@ -58,7 +62,7 @@ func newNovelPortfolioCmd(flags *rootFlags) *cobra.Command {
 
 			inventory := parseItemsFlag(flagItems)
 
-			cr, err := poeFetchCurrency(flagLeague, "Currency")
+			cr, err := poeFetchCurrencyGame(flagLeague, "Currency", flagGame)
 			if err != nil {
 				return apiErr(fmt.Errorf("fetching currency data: %w", err))
 			}
@@ -145,6 +149,7 @@ func newNovelPortfolioCmd(flags *rootFlags) *cobra.Command {
 		},
 	}
 	cmd.Flags().StringVar(&flagItems, "items", "", "Comma-separated currency:quantity pairs (e.g. \"Divine Orb:50,Chaos Orb:1000\")")
-	cmd.Flags().StringVar(&flagLeague, "league", "Mirage", "League name (e.g. Mirage, Standard)")
+	cmd.Flags().StringVar(&flagGame, "game", "poe2", "Game version: poe1 or poe2")
+	cmd.Flags().StringVar(&flagLeague, "league", "", "League name (default: Standard for poe2, Mirage for poe1)")
 	return cmd
 }

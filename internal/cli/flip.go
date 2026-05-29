@@ -31,6 +31,7 @@ type flipView struct {
 func newNovelFlipCmd(flags *rootFlags) *cobra.Command {
 	var flagBudget float64
 	var flagLeague string
+	var flagGame string
 	var flagLimit int
 	var flagMinProfit float64
 
@@ -47,20 +48,19 @@ func newNovelFlipCmd(flags *rootFlags) *cobra.Command {
 			if cmd.Flags().NFlag() == 0 && len(args) == 0 {
 				return cmd.Help()
 			}
+			if flagLeague == "" {
+				flagLeague = poeDefaultLeague(flagGame)
+			}
 			if dryRunOK(flags) {
-				fmt.Fprintf(cmd.OutOrStdout(), "would find best flip for %.0fc budget in %s\n", flagBudget, flagLeague)
+				fmt.Fprintf(cmd.OutOrStdout(), "would find best flip for %.0fc budget in %s %s\n", flagBudget, flagGame, flagLeague)
 				return nil
 			}
 			if flagBudget <= 0 {
 				_ = cmd.Usage()
 				return usageErr(fmt.Errorf("--budget must be a positive number of chaos orbs"))
 			}
-			if flagLeague == "" {
-				_ = cmd.Usage()
-				return usageErr(fmt.Errorf("--league is required"))
-			}
 
-			cr, err := poeFetchCurrency(flagLeague, "Currency")
+			cr, err := poeFetchCurrencyGame(flagLeague, "Currency", flagGame)
 			if err != nil {
 				return apiErr(fmt.Errorf("fetching currency data: %w", err))
 			}
@@ -181,9 +181,10 @@ func newNovelFlipCmd(flags *rootFlags) *cobra.Command {
 		},
 	}
 	cmd.Flags().Float64Var(&flagBudget, "budget", 0, "Budget in chaos orbs (required)")
-	cmd.Flags().StringVar(&flagLeague, "league", "Mirage", "League name (e.g. Mirage, Standard)")
+	cmd.Flags().StringVar(&flagGame, "game", "poe2", "Game version: poe1 or poe2")
+	cmd.Flags().StringVar(&flagLeague, "league", "", "League name (default: Standard for poe2, Mirage for poe1)")
 	cmd.Flags().IntVar(&flagLimit, "limit", 10, "Maximum results to show")
 	cmd.Flags().Float64Var(&flagMinProfit, "min-profit", 0, "Minimum profit in chaos to include a result")
-	_ = strconv.Itoa(0) // suppress unused import if needed
+	_ = strconv.Itoa(0)
 	return cmd
 }

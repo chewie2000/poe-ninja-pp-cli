@@ -27,6 +27,7 @@ type velocityView struct {
 
 func newNovelVelocityCmd(flags *rootFlags) *cobra.Command {
 	var flagLeague string
+	var flagGame string
 	var flagTop int
 
 	cmd := &cobra.Command{
@@ -42,8 +43,11 @@ func newNovelVelocityCmd(flags *rootFlags) *cobra.Command {
 			if cmd.Flags().NFlag() == 0 && len(args) == 0 {
 				return cmd.Help()
 			}
+			if flagLeague == "" {
+				flagLeague = poeDefaultLeague(flagGame)
+			}
 			if dryRunOK(flags) {
-				fmt.Fprintf(cmd.OutOrStdout(), "would compute price velocity for all categories in %s\n", flagLeague)
+				fmt.Fprintf(cmd.OutOrStdout(), "would compute price velocity for all categories in %s %s\n", flagGame, flagLeague)
 				return nil
 			}
 			if flagLeague == "" {
@@ -66,7 +70,7 @@ func newNovelVelocityCmd(flags *rootFlags) *cobra.Command {
 				go func(cat string) {
 					defer wg.Done()
 					if cat == "Currency" || cat == "Fragment" {
-						cr, err := poeFetchCurrency(flagLeague, cat)
+						cr, err := poeFetchCurrencyGame(flagLeague, cat, flagGame)
 						if err != nil {
 							ch <- catResult{cat: cat, err: err}
 							return
@@ -83,7 +87,7 @@ func newNovelVelocityCmd(flags *rootFlags) *cobra.Command {
 						}
 						ch <- catResult{cat: cat, lines: lines}
 					} else {
-						ir, err := poeFetchItem(flagLeague, cat)
+						ir, err := poeFetchItemGame(flagLeague, cat, flagGame)
 						if err != nil {
 							ch <- catResult{cat: cat, err: err}
 							return
@@ -175,7 +179,8 @@ func newNovelVelocityCmd(flags *rootFlags) *cobra.Command {
 			return nil
 		},
 	}
-	cmd.Flags().StringVar(&flagLeague, "league", "Mirage", "League name (e.g. Mirage, Standard)")
+	cmd.Flags().StringVar(&flagGame, "game", "poe2", "Game version: poe1 or poe2")
+	cmd.Flags().StringVar(&flagLeague, "league", "", "League name (default: Standard for poe2, Mirage for poe1)")
 	cmd.Flags().IntVar(&flagTop, "top", 20, "Number of categories to show (0 = all)")
 	return cmd
 }

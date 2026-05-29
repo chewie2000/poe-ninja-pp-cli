@@ -162,6 +162,7 @@ func arbFindCycles(prices map[string]float64, minGainPct float64, maxHops int) [
 func newNovelArbCmd(flags *rootFlags) *cobra.Command {
 	var flagBudget float64
 	var flagLeague string
+	var flagGame string
 	var flagMinGain float64
 	var flagLimit int
 	var flagMaxHops int
@@ -171,24 +172,23 @@ func newNovelArbCmd(flags *rootFlags) *cobra.Command {
 		Short: "Find profitable multi-hop currency trading cycles using graph math over all exchange rates simultaneously.",
 		Long:  "Runs Bellman-Ford on the full currency graph to find profitable trading cycles. A cycle is A→B→C→A where the chain of trades yields more chaos than you started with. Requires a network connection; prices are fetched live from poe.ninja.",
 		Example: strings.Trim(`
-  poe-ninja-pp-cli arb --league Mirage
-  poe-ninja-pp-cli arb --league Mirage --min-gain 2 --budget 500
-  poe-ninja-pp-cli arb --league Mirage --max-hops 3 --json --agent`, "\n"),
+  poe-ninja-pp-cli arb --game poe2 --league Standard
+  poe-ninja-pp-cli arb --game poe2 --league Standard --min-gain 2 --budget 500
+  poe-ninja-pp-cli arb --game poe1 --league Mirage --max-hops 3 --json`, "\n"),
 		Annotations: map[string]string{"mcp:read-only": "true"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if cmd.Flags().NFlag() == 0 && len(args) == 0 {
 				return cmd.Help()
 			}
+			if flagLeague == "" {
+				flagLeague = poeDefaultLeague(flagGame)
+			}
 			if dryRunOK(flags) {
-				fmt.Fprintf(cmd.OutOrStdout(), "would find arbitrage cycles in %s league\n", flagLeague)
+				fmt.Fprintf(cmd.OutOrStdout(), "would find arbitrage cycles in %s %s league\n", flagGame, flagLeague)
 				return nil
 			}
-			if flagLeague == "" {
-				_ = cmd.Usage()
-				return usageErr(fmt.Errorf("--league is required"))
-			}
 
-			cr, err := poeFetchCurrency(flagLeague, "Currency")
+			cr, err := poeFetchCurrencyGame(flagLeague, "Currency", flagGame)
 			if err != nil {
 				return apiErr(fmt.Errorf("fetching currency data: %w", err))
 			}
@@ -252,7 +252,8 @@ func newNovelArbCmd(flags *rootFlags) *cobra.Command {
 		},
 	}
 	cmd.Flags().Float64Var(&flagBudget, "budget", 0, "Your chaos budget (for estimated profit calculation)")
-	cmd.Flags().StringVar(&flagLeague, "league", "Mirage", "League name (e.g. Mirage, Standard)")
+	cmd.Flags().StringVar(&flagGame, "game", "poe2", "Game version: poe1 or poe2")
+	cmd.Flags().StringVar(&flagLeague, "league", "", "League name (default: Standard for poe2, Mirage for poe1)")
 	cmd.Flags().Float64Var(&flagMinGain, "min-gain", 1.0, "Minimum gain % to include a cycle (e.g. 2 = 2%)")
 	cmd.Flags().IntVar(&flagLimit, "limit", 10, "Maximum cycles to show")
 	cmd.Flags().IntVar(&flagMaxHops, "max-hops", 4, "Maximum hops in a cycle (2-5 recommended)")

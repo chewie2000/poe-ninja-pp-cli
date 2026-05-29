@@ -80,8 +80,18 @@ type poeItemResponse struct {
 }
 
 // poeFetchCurrency fetches live currency data for a league and type (Currency or Fragment).
+// Use game="poe2" for Path of Exile 2, anything else for PoE1.
 func poeFetchCurrency(league, currType string) (*poeCurrencyResponse, error) {
-	u := "https://poe.ninja/api/data/currencyoverview"
+	return poeFetchCurrencyGame(league, currType, "poe1")
+}
+
+func poeFetchCurrencyGame(league, currType, game string) (*poeCurrencyResponse, error) {
+	var u string
+	if game == "poe2" {
+		u = "https://poe.ninja/api/data/poe2/currencyoverview"
+	} else {
+		u = "https://poe.ninja/api/data/currencyoverview"
+	}
 	params := url.Values{}
 	params.Set("league", league)
 	params.Set("type", currType)
@@ -92,13 +102,49 @@ func poeFetchCurrency(league, currType string) (*poeCurrencyResponse, error) {
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != 200 {
-		return nil, fmt.Errorf("poe.ninja API returned HTTP %d for currency %s/%s — check that the league name is correct (run 'leagues' to see valid names)", resp.StatusCode, league, currType)
+		hint := "poe1: Mirage, Standard | poe2: Standard"
+		return nil, fmt.Errorf("poe.ninja API returned HTTP %d for %s currency %s/%s — valid leagues: %s", resp.StatusCode, game, league, currType, hint)
 	}
 	var result poeCurrencyResponse
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
 		return nil, fmt.Errorf("parsing poe.ninja response: %w", err)
 	}
 	return &result, nil
+}
+
+// poeFetchItemGame fetches item data for a specific game version.
+func poeFetchItemGame(league, itemType, game string) (*poeItemResponse, error) {
+	var u string
+	if game == "poe2" {
+		u = "https://poe.ninja/api/data/poe2/itemoverview"
+	} else {
+		u = "https://poe.ninja/api/data/itemoverview"
+	}
+	params := url.Values{}
+	params.Set("league", league)
+	params.Set("type", itemType)
+
+	resp, err := poeDoGet(u + "?" + params.Encode())
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != 200 {
+		return nil, fmt.Errorf("poe.ninja API returned HTTP %d for %s item %s/%s", resp.StatusCode, game, league, itemType)
+	}
+	var result poeItemResponse
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return nil, fmt.Errorf("parsing poe.ninja response: %w", err)
+	}
+	return &result, nil
+}
+
+// poeDefaultLeague returns a sensible default league name per game.
+func poeDefaultLeague(game string) string {
+	if game == "poe2" {
+		return "Standard"
+	}
+	return "Mirage"
 }
 
 // poeFetchItem fetches live item data for a league and item type.

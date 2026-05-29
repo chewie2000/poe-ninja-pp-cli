@@ -21,19 +21,23 @@ type trendView struct {
 
 func newNovelTrendCmd(flags *rootFlags) *cobra.Command {
 	var flagLeague string
+	var flagGame string
 
 	cmd := &cobra.Command{
 		Use:   "trend <item-name>",
 		Short: "Render 7-day price history for any currency or item as an ASCII chart directly in the terminal.",
 		Long:  "Render 7-day price history for any currency or item as an ASCII chart. Shows price trend, total change %, and sparkline visualization.",
 		Example: strings.Trim(`
-  poe-ninja-pp-cli trend "Divine Orb" --league Mirage
-  poe-ninja-pp-cli trend "Mirror of Kalandra" --league Standard
-  poe-ninja-pp-cli trend "Enlighten Support" --league Mirage --json`, "\n"),
+  poe-ninja-pp-cli trend "Divine Orb" --game poe2
+  poe-ninja-pp-cli trend "Divine Orb" --game poe1 --league Mirage
+  poe-ninja-pp-cli trend "Mirror of Kalandra" --game poe1 --league Standard --json`, "\n"),
 		Annotations: map[string]string{"mcp:read-only": "true"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 && cmd.Flags().NFlag() == 0 {
 				return cmd.Help()
+			}
+			if flagLeague == "" {
+				flagLeague = poeDefaultLeague(flagGame)
 			}
 			if dryRunOK(flags) {
 				fmt.Fprintln(cmd.OutOrStdout(), "would fetch trend data for:", strings.Join(args, " "))
@@ -43,15 +47,11 @@ func newNovelTrendCmd(flags *rootFlags) *cobra.Command {
 				_ = cmd.Usage()
 				return usageErr(fmt.Errorf("item name is required as positional argument"))
 			}
-			if flagLeague == "" {
-				_ = cmd.Usage()
-				return usageErr(fmt.Errorf("--league is required (e.g. --league Mirage)"))
-			}
 
 			query := strings.ToLower(strings.Join(args, " "))
 
 			// Try currency first
-			if cr, err := poeFetchCurrency(flagLeague, "Currency"); err == nil {
+			if cr, err := poeFetchCurrencyGame(flagLeague, "Currency", flagGame); err == nil {
 				for _, line := range cr.Lines {
 					if strings.EqualFold(line.CurrencyTypeName, strings.Join(args, " ")) ||
 						strings.Contains(strings.ToLower(line.CurrencyTypeName), query) {
@@ -71,7 +71,7 @@ func newNovelTrendCmd(flags *rootFlags) *cobra.Command {
 
 			// Try common item types
 			for _, t := range []string{"UniqueWeapon", "UniqueArmour", "UniqueJewel", "SkillGem", "DivinationCard", "Scarab", "Oil", "Essence"} {
-				ir, err := poeFetchItem(flagLeague, t)
+				ir, err := poeFetchItemGame(flagLeague, t, flagGame)
 				if err != nil {
 					continue
 				}
@@ -96,7 +96,8 @@ func newNovelTrendCmd(flags *rootFlags) *cobra.Command {
 			return notFoundErr(fmt.Errorf("item %q not found in league %q — try the exact name from poe.ninja", strings.Join(args, " "), flagLeague))
 		},
 	}
-	cmd.Flags().StringVar(&flagLeague, "league", "Mirage", "League name (e.g. Mirage, Standard, Hardcore Mirage)")
+	cmd.Flags().StringVar(&flagGame, "game", "poe2", "Game version: poe1 or poe2")
+	cmd.Flags().StringVar(&flagLeague, "league", "", "League name (default: Standard for poe2, Mirage for poe1)")
 	return cmd
 }
 

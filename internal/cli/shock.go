@@ -29,6 +29,7 @@ type shockView struct {
 func newNovelShockCmd(flags *rootFlags) *cobra.Command {
 	var flagSince string
 	var flagLeague string
+	var flagGame string
 	var flagMinDrop float64
 	var flagCategory string
 	var flagLimit int
@@ -49,8 +50,11 @@ Note: --since is retained for compatibility but shock now uses the sparkline's t
 			if cmd.Flags().NFlag() == 0 && len(args) == 0 {
 				return cmd.Help()
 			}
+			if flagLeague == "" {
+				flagLeague = poeDefaultLeague(flagGame)
+			}
 			if dryRunOK(flags) {
-				fmt.Fprintf(cmd.OutOrStdout(), "would scan %s for supply shocks with min-drop %.0f%%\n", flagLeague, flagMinDrop)
+				fmt.Fprintf(cmd.OutOrStdout(), "would scan %s %s for supply shocks with min-drop %.0f%%\n", flagGame, flagLeague, flagMinDrop)
 				return nil
 			}
 			if flagLeague == "" {
@@ -72,7 +76,7 @@ Note: --since is retained for compatibility but shock now uses the sparkline's t
 			if checkCurrency {
 				for _, t := range []string{"Currency", "Fragment"} {
 					totalFetches++
-					cr, err := poeFetchCurrency(flagLeague, t)
+					cr, err := poeFetchCurrencyGame(flagLeague, t, flagGame)
 					if err != nil {
 						fetchErrors++
 						continue
@@ -112,7 +116,7 @@ Note: --since is retained for compatibility but shock now uses the sparkline's t
 				}
 				for _, t := range searchTypes {
 					totalFetches++
-					ir, err := poeFetchItem(flagLeague, t)
+					ir, err := poeFetchItemGame(flagLeague, t, flagGame)
 					if err != nil {
 						fetchErrors++
 						continue
@@ -188,7 +192,8 @@ Note: --since is retained for compatibility but shock now uses the sparkline's t
 		},
 	}
 	cmd.Flags().StringVar(&flagSince, "since", "24h", "Time window (e.g. 24h, 48h) — informational for future snapshot support")
-	cmd.Flags().StringVar(&flagLeague, "league", "Mirage", "League name (e.g. Mirage, Standard)")
+	cmd.Flags().StringVar(&flagGame, "game", "poe2", "Game version: poe1 or poe2")
+	cmd.Flags().StringVar(&flagLeague, "league", "", "League name (default: Standard for poe2, Mirage for poe1)")
 	cmd.Flags().Float64Var(&flagMinDrop, "min-drop", 10.0, "Minimum price drop % to flag as a shock signal")
 	cmd.Flags().StringVar(&flagCategory, "category", "", "Limit to a specific category (e.g. Currency, Scarab)")
 	cmd.Flags().IntVar(&flagLimit, "limit", 20, "Maximum results to show")

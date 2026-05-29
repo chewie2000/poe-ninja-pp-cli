@@ -56,6 +56,7 @@ func parseItemsFlag(s string) map[string]float64 {
 func newNovelNetworthCmd(flags *rootFlags) *cobra.Command {
 	var flagItems string
 	var flagLeague string
+	var flagGame string
 	var flagFormat string
 	var flagLiquidThreshold int
 
@@ -71,6 +72,9 @@ func newNovelNetworthCmd(flags *rootFlags) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if cmd.Flags().NFlag() == 0 && len(args) == 0 {
 				return cmd.Help()
+			}
+			if flagLeague == "" {
+				flagLeague = poeDefaultLeague(flagGame)
 			}
 			if dryRunOK(flags) {
 				fmt.Fprintln(cmd.OutOrStdout(), "would calculate net worth for supplied inventory")
@@ -91,7 +95,7 @@ func newNovelNetworthCmd(flags *rootFlags) *cobra.Command {
 			}
 
 			// Fetch currency data
-			cr, err := poeFetchCurrency(flagLeague, "Currency")
+			cr, err := poeFetchCurrencyGame(flagLeague, "Currency", flagGame)
 			if err != nil {
 				return apiErr(fmt.Errorf("fetching currency data: %w", err))
 			}
@@ -222,7 +226,8 @@ func newNovelNetworthCmd(flags *rootFlags) *cobra.Command {
 		},
 	}
 	cmd.Flags().StringVar(&flagItems, "items", "", "Comma-separated item:quantity pairs (e.g. \"Divine Orb:50,Mirror of Kalandra:1\")")
-	cmd.Flags().StringVar(&flagLeague, "league", "Mirage", "League name (e.g. Mirage, Standard)")
+	cmd.Flags().StringVar(&flagGame, "game", "poe2", "Game version: poe1 or poe2")
+	cmd.Flags().StringVar(&flagLeague, "league", "", "League name (default: Standard for poe2, Mirage for poe1)")
 	cmd.Flags().StringVar(&flagFormat, "format", "chaos", "Output format: chaos or divine")
 	cmd.Flags().IntVar(&flagLiquidThreshold, "liquid-threshold", 10, "Minimum listings to consider an item liquid")
 	return cmd

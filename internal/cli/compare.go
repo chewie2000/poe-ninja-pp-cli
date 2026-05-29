@@ -29,6 +29,7 @@ type compareView struct {
 func newNovelCompareCmd(flags *rootFlags) *cobra.Command {
 	var flagLeague1 string
 	var flagLeague2 string
+	var flagGame string
 
 	cmd := &cobra.Command{
 		Use:   "compare <item-name>",
@@ -42,8 +43,18 @@ func newNovelCompareCmd(flags *rootFlags) *cobra.Command {
 			if len(args) == 0 && cmd.Flags().NFlag() == 0 {
 				return cmd.Help()
 			}
+			if flagLeague1 == "" {
+				flagLeague1 = poeDefaultLeague(flagGame)
+			}
+			if flagLeague2 == "" {
+				if flagGame == "poe2" {
+					flagLeague2 = "Hardcore"
+				} else {
+					flagLeague2 = "Standard"
+				}
+			}
 			if dryRunOK(flags) {
-				fmt.Fprintf(cmd.OutOrStdout(), "would compare %q between %s and %s\n", strings.Join(args, " "), flagLeague1, flagLeague2)
+				fmt.Fprintf(cmd.OutOrStdout(), "would compare %q between %s and %s (%s)\n", strings.Join(args, " "), flagLeague1, flagLeague2, flagGame)
 				return nil
 			}
 			if len(args) == 0 {
@@ -145,7 +156,8 @@ func newNovelCompareCmd(flags *rootFlags) *cobra.Command {
 			return nil
 		},
 	}
-	cmd.Flags().StringVar(&flagLeague1, "league1", "Mirage", "First league name (e.g. Mirage)")
-	cmd.Flags().StringVar(&flagLeague2, "league2", "Standard", "Second league name (e.g. Standard)")
+	cmd.Flags().StringVar(&flagGame, "game", "poe2", "Game version: poe1 or poe2")
+	cmd.Flags().StringVar(&flagLeague1, "league1", "", "First league (default: Standard for poe2, Mirage for poe1)")
+	cmd.Flags().StringVar(&flagLeague2, "league2", "", "Second league (default: Hardcore for poe2, Standard for poe1)")
 	return cmd
 }
