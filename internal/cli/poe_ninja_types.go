@@ -132,7 +132,7 @@ func poeDoGet(rawURL string) (*http.Response, error) {
 	if err != nil {
 		return nil, fmt.Errorf("building request: %w", err)
 	}
-	req.Header.Set("User-Agent", "poe-ninja-pp-cli/1.0 (github.com/mvanhorn/printing-press-library)")
+	req.Header.Set("User-Agent", "github.com/chewie2000/poe-ninja-pp-cli/1.0 (github.com/mvanhorn/printing-press-library)")
 	req.Header.Set("Accept", "application/json")
 	return poeHTTPClient.Do(req)
 }

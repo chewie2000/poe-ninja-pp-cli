@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"poe-ninja-pp-cli/internal/store"
+	"github.com/chewie2000/poe-ninja-pp-cli/internal/store"
 )
 
 func TestSyncSingleObject_PreservesLargeIntegerResourceIDs(t *testing.T) {

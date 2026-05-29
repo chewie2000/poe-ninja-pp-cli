@@ -14,7 +14,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"poe-ninja-pp-cli/internal/client"
+	"github.com/chewie2000/poe-ninja-pp-cli/internal/client"
 	"sort"
 	"strconv"
 	"strings"

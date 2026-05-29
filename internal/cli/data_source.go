@@ -17,8 +17,8 @@ import (
 	"strings"
 	"time"
 
-	"poe-ninja-pp-cli/internal/client"
-	"poe-ninja-pp-cli/internal/store"
+	"github.com/chewie2000/poe-ninja-pp-cli/internal/client"
+	"github.com/chewie2000/poe-ninja-pp-cli/internal/store"
 )
 
 const networkFallbackReason = "api_unreachable"

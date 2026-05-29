@@ -15,11 +15,11 @@ import (
 
 	mcplib "github.com/mark3labs/mcp-go/mcp"
 	"github.com/mark3labs/mcp-go/server"
-	"poe-ninja-pp-cli/internal/cli"
-	"poe-ninja-pp-cli/internal/client"
-	"poe-ninja-pp-cli/internal/config"
-	"poe-ninja-pp-cli/internal/mcp/cobratree"
-	"poe-ninja-pp-cli/internal/store"
+	"github.com/chewie2000/poe-ninja-pp-cli/internal/cli"
+	"github.com/chewie2000/poe-ninja-pp-cli/internal/client"
+	"github.com/chewie2000/poe-ninja-pp-cli/internal/config"
+	"github.com/chewie2000/poe-ninja-pp-cli/internal/mcp/cobratree"
+	"github.com/chewie2000/poe-ninja-pp-cli/internal/store"
 )
 
 // RegisterTools registers all API operations as MCP tools.

@@ -12,7 +12,7 @@ import (
 	"testing"
 	"time"
 
-	"poe-ninja-pp-cli/internal/config"
+	"github.com/chewie2000/poe-ninja-pp-cli/internal/config"
 )
 
 // recordingRoundTripper counts how many times its RoundTrip method is

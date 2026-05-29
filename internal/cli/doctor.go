@@ -14,10 +14,10 @@ import (
 	"time"
 
 	"github.com/spf13/cobra"
-	"poe-ninja-pp-cli/internal/client"
-	"poe-ninja-pp-cli/internal/cliutil"
-	"poe-ninja-pp-cli/internal/config"
-	"poe-ninja-pp-cli/internal/store"
+	"github.com/chewie2000/poe-ninja-pp-cli/internal/client"
+	"github.com/chewie2000/poe-ninja-pp-cli/internal/cliutil"
+	"github.com/chewie2000/poe-ninja-pp-cli/internal/config"
+	"github.com/chewie2000/poe-ninja-pp-cli/internal/store"
 )
 
 // looksLikeDoctorInterstitial reports whether the response body matches a known

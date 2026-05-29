@@ -13,8 +13,8 @@ import (
 	"time"
 
 	"github.com/spf13/cobra"
-	"poe-ninja-pp-cli/internal/client"
-	"poe-ninja-pp-cli/internal/config"
+	"github.com/chewie2000/poe-ninja-pp-cli/internal/client"
+	"github.com/chewie2000/poe-ninja-pp-cli/internal/config"
 )
 
 var version = "1.0.0"

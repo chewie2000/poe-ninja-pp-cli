@@ -18,8 +18,8 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
-	"poe-ninja-pp-cli/internal/cliutil"
-	"poe-ninja-pp-cli/internal/config"
+	"github.com/chewie2000/poe-ninja-pp-cli/internal/cliutil"
+	"github.com/chewie2000/poe-ninja-pp-cli/internal/config"
 	"sort"
 	"strings"
 	"time"
@@ -496,7 +496,7 @@ func (c *Client) doInternal(ctx context.Context, method, path string, params map
 			req.Header.Del(BinaryResponseHeader)
 		}
 		if req.Header.Get("User-Agent") == "" {
-			req.Header.Set("User-Agent", "poe-ninja-pp-cli/")
+			req.Header.Set("User-Agent", "github.com/chewie2000/poe-ninja-pp-cli/")
 		}
 		// Go's net/http omits Accept by default; browsers, curl, and other
 		// stdlibs always send it. Fingerprint-checking WAFs (Imperva, Akamai,

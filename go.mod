@@ -1,4 +1,4 @@
-module poe-ninja-pp-cli
+module github.com/chewie2000/poe-ninja-pp-cli
 
 go 1.26.3
 
