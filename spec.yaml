@@ -1,0 +1,108 @@
+name: poe-ninja
+display_name: poe.ninja
+description: Path of Exile economy data — currency rates, item prices, and market analytics for PoE1 and PoE2.
+category: other
+cli_description: "Check poe.ninja prices, find arbitrage, and analyze Path of Exile economy data — offline-fast with local SQLite cache."
+
+base_url: https://poe.ninja
+
+auth:
+  type: none
+
+rate_limiting:
+  requests_per_second: 4
+  burst: 8
+
+resources:
+  currency:
+    description: Currency exchange rates and chaos values (Path of Exile 1)
+    syncable: true
+    endpoints:
+      overview:
+        method: GET
+        path: /api/data/currencyoverview
+        description: Get all currency exchange rates and chaos values for a league
+        params:
+          - name: league
+            in: query
+            required: true
+            description: "League name (e.g. Mirage, Standard, Hardcore Mirage)"
+          - name: type
+            in: query
+            required: true
+            description: "Currency category: Currency or Fragment"
+            enum:
+              - Currency
+              - Fragment
+        response_format: json
+
+  item:
+    description: Item prices and market data (Path of Exile 1)
+    syncable: true
+    endpoints:
+      overview:
+        method: GET
+        path: /api/data/itemoverview
+        description: Get item prices for a specific category and league
+        params:
+          - name: league
+            in: query
+            required: true
+            description: "League name (e.g. Mirage, Standard)"
+          - name: type
+            in: query
+            required: true
+            description: "Item category type"
+            enum:
+              - Oil
+              - Incubator
+              - Scarab
+              - Fossil
+              - Resonator
+              - Essence
+              - DivinationCard
+              - SkillGem
+              - BaseType
+              - HelmetEnchant
+              - UniqueMap
+              - Map
+              - UniqueJewel
+              - UniqueFlask
+              - UniqueWeapon
+              - UniqueArmour
+              - UniqueAccessory
+              - Beast
+              - Vial
+              - DeliriumOrb
+              - Omen
+              - UniqueRelic
+              - ClusterJewel
+              - BlightedMap
+              - BlightRavagedMap
+              - Invitation
+              - Memory
+              - Coffin
+              - AllflameEmber
+        response_format: json
+
+  currency_poe2:
+    description: Currency exchange rates for Path of Exile 2
+    syncable: true
+    endpoints:
+      overview:
+        method: GET
+        path: /api/data/poe2/currencyoverview
+        description: Get currency exchange rates for a Path of Exile 2 league
+        params:
+          - name: league
+            in: query
+            required: true
+            description: "PoE2 league name (e.g. Standard)"
+          - name: type
+            in: query
+            required: true
+            description: "Currency category"
+            enum:
+              - Currency
+              - Fragment
+        response_format: json

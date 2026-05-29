@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-05-29T19:39:55.5139534Z",
+  "printing_press_version": "4.19.0",
+  "api_name": "poe-ninja",
+  "display_name": "poe.ninja",
+  "cli_name": "poe-ninja-pp-cli",
+  "creator": {
+    "handle": "chewie2000"
+  },
+  "owner": "chewie2000",
+  "printer": "chewie2000",
+  "spec_format": "internal",
+  "spec_checksum": "sha256:84bb1f8111fc94541c1d2b439b8426434051c45c4f28e78698080377a6ef93c2",
+  "run_id": "20260529-192453",
+  "category": "other",
+  "description": "Every poe.ninja price, offline, searchable, and scriptable — with arbitrage math no browser tab can do.",
+  "mcp_binary": "poe-ninja-pp-mcp",
+  "mcp_tool_count": 3,
+  "mcp_public_tool_count": 3,
+  "mcp_ready": "full",
+  "auth_type": "none",
+  "novel_features": [
+    {
+      "name": "Arbitrage Chain Finder",
+      "command": "arb",
+      "description": "Find profitable multi-hop currency trading cycles using graph math over all exchange rates simultaneously."
+    },
+    {
+      "name": "Bulk Flip Optimizer",
+      "command": "flip",
+      "description": "Given a chaos budget, find the single most profitable currency-to-currency round-trip trade accounting for bulk minimums."
+    },
+    {
+      "name": "Supply Shock Detector",
+      "command": "shock",
+      "description": "Find items where supply is drying up (listing count dropped) before price has reacted — the leading edge of a price spike."
+    },
+    {
+      "name": "Liquid Net Worth Calculator",
+      "command": "networth",
+      "description": "Calculate total chaos value of a user-supplied inventory, flagging illiquid holdings (low listing count) vs. paper wealth."
+    },
+    {
+      "name": "Economy Velocity Dashboard",
+      "command": "velocity",
+      "description": "Rank item categories by price acceleration computed from 7-day sparkline data across the entire database."
+    },
+    {
+      "name": "Div Card Value Decoder",
+      "command": "divcard",
+      "description": "Show all divination cards sorted by profit from completing a set vs. selling individual cards, using cross-table price joins."
+    },
+    {
+      "name": "ASCII Sparkline Trend Viewer",
+      "command": "trend",
+      "description": "Render 7-day price history for any currency or item as an ASCII chart directly in the terminal."
+    },
+    {
+      "name": "Portfolio Value Tracker",
+      "command": "portfolio",
+      "description": "Track a user-defined list of currencies and items by total chaos value, updated each sync."
+    },
+    {
+      "name": "Cross-League Price Comparison",
+      "command": "compare",
+      "description": "Show the price of the same item side-by-side in two leagues to identify value arbitrage opportunities."
+    }
+  ]
+}

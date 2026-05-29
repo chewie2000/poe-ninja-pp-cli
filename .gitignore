@@ -1,0 +1,17 @@
+# Compiled binaries
+poe-ninja-pp-cli
+poe-ninja-pp-cli.exe
+poe-ninja-pp-mcp
+poe-ninja-pp-mcp.exe
+bin/
+
+# Build artifacts
+build/stage/
+build/*.mcpb
+
+# Local dev
+*.db
+*.sqlite
+
+# Test output
+dogfood-results.json

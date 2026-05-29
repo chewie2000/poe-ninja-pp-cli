@@ -1,0 +1,82 @@
+{
+  "api_name": "poe-ninja",
+  "base_url": "https://poe.ninja",
+  "description": "Every poe.ninja price, offline, searchable, and scriptable — with arbitrage math no browser tab can do.",
+  "mcp_ready": "full",
+  "http_transport": "standard",
+  "auth": {
+    "type": "none"
+  },
+  "required_headers": [],
+  "tools": [
+    {
+      "name": "currency_overview",
+      "description": "Get all currency exchange rates and chaos values for a league. Required: league, type.",
+      "method": "GET",
+      "path": "/api/data/currencyoverview",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "league",
+          "type": "string",
+          "location": "query",
+          "description": "League name (e.g. Mirage, Standard, Hardcore Mirage)",
+          "required": true
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "location": "query",
+          "description": "Currency category: Currency or Fragment",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "currency_poe2_overview",
+      "description": "Get currency exchange rates for a Path of Exile 2 league. Required: league, type.",
+      "method": "GET",
+      "path": "/api/data/poe2/currencyoverview",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "league",
+          "type": "string",
+          "location": "query",
+          "description": "PoE2 league name (e.g. Standard)",
+          "required": true
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "location": "query",
+          "description": "Currency category",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "item_overview",
+      "description": "Get item prices for a specific category and league. Required: league, type.",
+      "method": "GET",
+      "path": "/api/data/itemoverview",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "league",
+          "type": "string",
+          "location": "query",
+          "description": "League name (e.g. Mirage, Standard)",
+          "required": true
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "location": "query",
+          "description": "Item category type",
+          "required": true
+        }
+      ]
+    }
+  ]
+}

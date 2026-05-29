@@ -1,0 +1,51 @@
+version: 2
+project_name: poe-ninja-pp-cli
+changelog:
+  disable: true
+builds:
+  - id: poe-ninja-pp-cli
+    main: ./cmd/poe-ninja-pp-cli
+    binary: poe-ninja-pp-cli
+    env:
+      - CGO_ENABLED=0
+    ldflags:
+      - -s -w -X poe-ninja-pp-cli/internal/cli.version={{ .Version }}
+    targets:
+      - darwin_amd64
+      - darwin_arm64
+      - linux_amd64
+      - linux_arm64
+      - windows_amd64
+      - windows_arm64
+  - id: poe-ninja-pp-mcp
+    main: ./cmd/poe-ninja-pp-mcp
+    binary: poe-ninja-pp-mcp
+    env:
+      - CGO_ENABLED=0
+    ldflags:
+      - -s -w
+    targets:
+      - darwin_amd64
+      - darwin_arm64
+      - linux_amd64
+      - linux_arm64
+      - windows_amd64
+      - windows_arm64
+archives:
+  - formats: [tar.gz]
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    format_overrides:
+      - goos: windows
+        formats: [zip]
+checksum:
+  name_template: checksums.txt
+brews:
+  - name: poe-ninja-pp-cli
+    repository:
+      owner: chewie2000
+      name: homebrew-tap
+    homepage: "https://github.com/chewie2000/poe-ninja-pp-cli"
+    description: "Every poe.ninja price, offline, searchable, and scriptable — with arbitrage math no browser tab can do."
+    install: |
+      bin.install "poe-ninja-pp-cli"
+      bin.install "poe-ninja-pp-mcp"

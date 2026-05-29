@@ -1,0 +1,27 @@
+{
+  "manifest_version": "0.3",
+  "name": "poe-ninja-pp-mcp",
+  "display_name": "poe.ninja",
+  "version": "4.19.0",
+  "description": "Every poe.ninja price, offline, searchable, and scriptable — with arbitrage math no browser tab can do.",
+  "author": {
+    "name": "CLI Printing Press"
+  },
+  "license": "Apache-2.0",
+  "server": {
+    "type": "binary",
+    "entry_point": "bin/poe-ninja-pp-mcp",
+    "mcp_config": {
+      "command": "${__dirname}/bin/poe-ninja-pp-mcp",
+      "args": []
+    }
+  },
+  "compatibility": {
+    "claude_desktop": ">=1.0.0",
+    "platforms": [
+      "darwin",
+      "linux",
+      "win32"
+    ]
+  }
+}

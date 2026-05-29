@@ -1,0 +1,19 @@
+{
+  "timestamp": "2026-05-29T19:39:00.0620467Z",
+  "cli_dir": "\u003ccli-dir\u003e\\poe-ninja-pp-cli",
+  "findings": [
+    {
+      "kind": "thin-short",
+      "command": "version",
+      "file": "root.go",
+      "line": 315,
+      "evidence": "Print version",
+      "status": "accepted",
+      "note": "Standard version command in a DO-NOT-EDIT generated file; 'Print version' is accurate and unambiguous to agents — no additional context improves discoverability"
+    }
+  ],
+  "scorecard_before": {
+    "mcp_description_quality": 10,
+    "captured": "2026-05-29T19:36:25.0189316Z"
+  }
+}
